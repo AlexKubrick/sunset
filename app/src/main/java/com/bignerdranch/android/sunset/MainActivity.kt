@@ -21,14 +21,22 @@ class MainActivity : AppCompatActivity() {
     private val nightSkyColor: Int by lazy {
         ContextCompat.getColor(this, R.color.night_sky)
     }
+    // chapter 25. challenge 1.
+    private var isSunset = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // chapter 25. challenge 1.
         binding.scene.setOnClickListener {
-            startAnimation()
+            if (isSunset) {
+                startAnimation()
+            } else {
+                reverseAnimation()
+            }
+            isSunset = !isSunset
         }
     }
 
@@ -58,4 +66,32 @@ class MainActivity : AppCompatActivity() {
         animatorSet.start()
 
     }
+
+    // chapter 25. challenge 1.
+    private fun reverseAnimation() {
+        val sunYStart = binding.sun.top.toFloat()
+        val sunYEnd = binding.sky.bottom.toFloat()
+
+        val heightAnimator = ObjectAnimator
+            .ofFloat(binding.sun, "y", sunYEnd, sunYStart)
+            .setDuration(3000)
+        heightAnimator.interpolator = AccelerateInterpolator()
+
+        val sunsetSkyAnimator = ObjectAnimator
+            .ofInt(binding.sky, "backgroundColor", nightSkyColor, sunsetSkyColor)
+            .setDuration(1500)
+        sunsetSkyAnimator.setEvaluator(ArgbEvaluator())
+
+        val normalSkyAnimator = ObjectAnimator
+            .ofInt(binding.sky, "backgroundColor", sunsetSkyColor, blueSkyColor)
+            .setDuration(3000)
+        normalSkyAnimator.setEvaluator(ArgbEvaluator())
+
+        val animatorSet = AnimatorSet()
+        animatorSet.play(heightAnimator)
+            .with(sunsetSkyAnimator)
+            .before(normalSkyAnimator)
+        animatorSet.start()
+    }
 }
+
